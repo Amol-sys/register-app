@@ -39,7 +39,8 @@ pipeline {
         stage("SonarQube Analysis") {
             steps {
                 script {
-                    withSonarQubeEnv('jenkins-sonarqube-token') {
+                    // Replace 'sonarqube-installation-name' with the correct SonarQube installation name
+                    withSonarQubeEnv('sonarqube-installation-name') {
                         sh "mvn sonar:sonar"
                     }
                 }
