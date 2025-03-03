@@ -7,7 +7,7 @@ pipeline {
   }
 
   environment {
-    SONAR_HOST_URL = 'http://your-sonarqube-server'  // Set the correct SonarQube URL
+    SONAR_HOST_URL = 'http://your-sonarqube-server'  // Ensure this is correctly set in Jenkins global settings
   }
 
   stages {
@@ -38,16 +38,25 @@ pipeline {
     stage("SonarQube Analysis") {
       steps {
         script {
-          withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') { 
-            sh "mvn sonar:sonar"
+          withSonarQubeEnv('jenkins-sonarqube-token') { 
+            sh "mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL}"
+          }
+        }
+      }
+    }
+
+    stage("Quality Gate") {
+      steps {
+        script {
+          def qg = waitForQualityGate abortPipeline: true, credentialsId: 'jenkins-sonarqube-token'
+          if (qg.status != 'OK') {
+            error "Quality Gate failed: ${qg.status}"
           }
         }
       }
     }
   }
 
-
-  
   post {
     always {
       echo "Pipeline execution completed."
