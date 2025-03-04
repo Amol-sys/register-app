@@ -6,10 +6,6 @@ pipeline {
     maven 'Maven3'
   }
 
-  environment {
-    SONAR_HOST_URL = 'http://your-sonarqube-server'  // Ensure this is correctly set in Jenkins global settings
-  }
-
   stages {
     stage("Cleanup Workspace") {
       steps {
@@ -38,7 +34,7 @@ pipeline {
     stage("SonarQube Analysis") {
       steps {
         script {
-          withSonarQubeEnv('jenkins-sonarqube-token') { 
+          withSonarQubeEnv('jenkins-sonarqube-token') {
             sh "mvn sonar:sonar"
           }
         }
@@ -48,21 +44,9 @@ pipeline {
     stage("Quality Gate") {
       steps {
         script {
-              waitForQualityGate abortPipeline: false, credentialsId: 'jenkins-sonarqube-token'
+          waitForQualityGate abortPipeline: false
         }
       }
-    }
-  }
-
-  post {
-    always {
-      echo "Pipeline execution completed."
-    }
-    failure {
-      echo "Build failed! Check logs for errors."
-    }
-    success {
-      echo "Build and tests completed successfully!"
     }
   }
 }
