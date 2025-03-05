@@ -10,9 +10,10 @@ pipeline {
         APP_NAME = "register-app-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "amol297"
+        DOCKER_PASS = 'dockerhub'
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        DOCKER_BUILDKIT = "1"  // ✅ Enable BuildKit for efficient builds
+        // DOCKER_BUILDKIT = "1"  // ✅ Enable BuildKit for efficient builds
     }
 
     stages {
@@ -61,17 +62,17 @@ pipeline {
         stage("Build & Push Docker Image") {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/']) {
-                        sh """
-                            docker buildx create --use || true
-                            docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                            docker push ${IMAGE_NAME}:latest
-                        """
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')
                     }
                 }
             }
-        }
+
+       }
     }
 }
